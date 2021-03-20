@@ -34,6 +34,7 @@ function get_ascii_xy {
   case "$1" in 
     "arch") ascii_width=34 ascii_height=15;;
     "gentoo") ascii_width=37 ascii_height=17;;
+    "bedrock") ascii_width=40 ascii_height=17;;
     *) ascii_width=0 ascii_height=0;;
   esac
 }
@@ -150,7 +151,7 @@ function distro_info {
 
 function main {
   reset="\e[m"
-  source /etc/os-release
+  [ -e "/bedrock/etc/os-release" ] && source /bedrock/etc/os-release || source /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
   [ -e "distro/$distro_id" ] && source "distro/$distro_id" || source "distro/unknown"
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
