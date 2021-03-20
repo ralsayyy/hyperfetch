@@ -176,11 +176,12 @@ function main {
     mem_fancy_prefix="Memory${reset}: "
     model_prefix="Device${reset}: "
     prefix_format="\e[1;38;5;5m"
+    ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [ "${infos[0]}" = "logo" ] && get_ascii_xy "$ascii_distro" 
-  [ "${infos[0]}" = "logo" ] && logo "$ascii_distro" &
-  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
+  [ "$ascii_show" = "1" ] && get_ascii_xy "$ascii_distro"
+  [ "$ascii_show" = "1" ] && logo "${ascii_distro}" &
+  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/ &
   info_amount=${#infos[@]};
   for ((i=0; i<$info_amount; i++)) {
     ${infos[i]}_info &

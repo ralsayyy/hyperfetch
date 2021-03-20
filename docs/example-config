@@ -1,0 +1,37 @@
+# sections to display (available sections: distro, kernel, uptime, shell, packages, memory, wm, cpu, gpu, term)
+infos=(logo title distro kernel model uptime packages term shell mem_fancy wm cpu gpu)
+
+## sections
+# distro
+distro_prefix="Distro${reset}: "
+# kernel
+kernel_prefix="Kernel${reset}: "
+# uptime
+uptime_prefix="Uptime${reset}:"
+# shell
+shell_prefix="Shell${reset}: "
+# packages
+packages_prefix="Packages${reset}: "
+# memory
+memory_prefix="Memory${reset}: "
+# wm
+wm_prefix="WM${reset}:"
+# cpu
+cpu_prefix="CPU${reset}: "
+# gpu
+gpu_prefix="GPU${reset}: "
+# terminal
+term_prefix="Terminal${reset}: "
+# mem_fancy
+mem_fancy_prefix="Memory${reset}: "
+# model
+model_prefix="Device${reset}: "
+# logo
+# ${distro_id} is the distro you are currently running
+ascii_distro="${distro_id}"
+# show ascii art (0 = false, 1 = true)
+ascii_show="1"
+
+## Display Options
+# Prefix formatting
+prefix_format="\e[1;38;5;5m"
