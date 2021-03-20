@@ -1,2 +1,2 @@
 # hyperfetch - a fast system information fetcher
-[images/arch-totallyrobot.png]
+![screenshot](images/arch-totallyrobot.png)
