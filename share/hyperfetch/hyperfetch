@@ -11,7 +11,7 @@ function module_output {
 }
 
 function logo {
-  [ -e "distro/${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
+  [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
 }
 
 function model_info {
@@ -36,10 +36,6 @@ function get_ascii_xy {
     "gentoo") ascii_width=37 ascii_height=17;;
     *) ascii_width=0 ascii_height=0;;
   esac
-}
-
-function logo_info {
-  module_output "" "logo"
 }
 
 function title_info {
@@ -153,16 +149,14 @@ function distro_info {
 }
 
 function main {
-  shopt -s checkwinsize; (:;:)
   reset="\e[m"
   source /etc/os-release
-  export distro=$PRETTY_NAME
-  export distro_id=$ID
+  export distro=$PRETTY_NAME distro_id=$ID
   [ -e "distro/$distro_id" ] && source "distro/$distro_id" || source "distro/unknown"
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     source ${HOME}/.config/hyperfetch/config
   else
-    infos=(logo title distro kernel model uptime packages term shell mem_fancy wm cpu gpu) 
+    infos=(title distro kernel model uptime packages shell term mem_fancy wm cpu gpu) 
     distro_prefix="Distro${reset}: "
     kernel_prefix="Kernel${reset}: "
     uptime_prefix="Uptime${reset}:"
@@ -179,8 +173,10 @@ function main {
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [ "$ascii_show" = "1" ] && get_ascii_xy "$ascii_distro"
-  [ "$ascii_show" = "1" ] && logo "${ascii_distro}" &
+  [ "$ascii_show" = "1" ] && {
+    get_ascii_xy "$ascii_distro"
+    logo "${ascii_distro}" &
+  }
   [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/ &
   info_amount=${#infos[@]};
   for ((i=0; i<$info_amount; i++)) {
@@ -191,7 +187,7 @@ function main {
   for ((i=0; i<$info_amount; i++)) {
     mapfile -t info < /run/user/$UID/hyperfetch/${infos[i]}
     prefix=${infos[i]}_prefix
-    printf "\e[${COLUMNS}D\e[${ascii_width}C${prefix_format}${!prefix}${info[@]}\n"
+    printf "\e[1000D\e[${ascii_width}C${prefix_format}${!prefix}${info[@]}\n"
   }
   [ "$ascii_height" = 0 ] || echo -e "\e[$(( $ascii_height - $info_amount ))B"
 }
