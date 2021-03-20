@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+function logo {
+  printf "${prefix_format}"; cat "distro/ascii-${distro_id}"
+}
+
+function packages_info {
+  module_output "$(pacman -Q | wc -l)" "packages"
+}
+
+
