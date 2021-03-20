@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# kill the script if command errors out
+set -e
+# disable unicode
 LC_ALL=C
 LANG=C
 
@@ -156,7 +159,24 @@ function main {
   reset="\e[m"
   source /etc/os-release
   export distro=$PRETTY_NAME
-  [ -e "${HOME}/.config/hyperfetch/config" ] && source ${HOME}/.config/hyperfetch/config
+  if [ -e "${HOME}/.config/hyperfetch/config" ];then
+    source ${HOME}/.config/hyperfetch/config
+  else
+    infos=(logo title distro kernel model uptime packages term shell mem_fancy wm cpu gpu) 
+    distro_prefix="Distro${reset}: "
+    kernel_prefix="Kernel${reset}: "
+    uptime_prefix="Uptime${reset}:"
+    shell_prefix="Shell${reset}: "
+    packages_prefix="Packages${reset}: "
+    memory_prefix="Memory${reset}: "
+    wm_prefix="WM${reset}:"
+    cpu_prefix="CPU${reset}: "
+    gpu_prefix="GPU${reset}: "
+    term_prefix="Terminal${reset}: "
+    mem_fancy_prefix="Memory${reset}: "
+    model_prefix="Device${reset}: "
+    prefix_format="\e[1;38;5;5m"
+  fi
   [ "${infos[0]}" = "logo" ] && get_ascii_xy "$distro" 
   [ "${infos[0]}" = "logo" ] && logo "$distro" &
   [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
