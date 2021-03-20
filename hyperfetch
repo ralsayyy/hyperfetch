@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-PREFIX="."
+PREFIX=${PREFIX:-"."}
 cd ${PREFIX}/share/hyperfetch/
 ./hyperfetch

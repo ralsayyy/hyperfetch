@@ -3,4 +3,6 @@ all:
 
 install:
 	cp -r share/hyperfetch $(PREFIX)/share
-	cp hyperfetch $(PREFIX)/bin/hyperfetch
+	echo "#!/usr/bin/env bash" > $(PREFIX)/bin/hyperfetch
+	echo "PREFIX=$(PREFIX)" >> $(PREFIX)/bin/hyperfetch
+	cat hyperfetch >> $(PREFIX)/bin/hyperfetch
