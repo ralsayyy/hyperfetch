@@ -128,6 +128,7 @@ function distro_info {
 }
 
 function main {
+  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
   reset="\e[m"
   [ -e "/bedrock/etc/os-release" ] && source /bedrock/etc/os-release || source /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
@@ -156,7 +157,6 @@ function main {
     get_ascii_xy "$ascii_distro"
     logo "${ascii_distro}" &
   }
-  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
   info_amount=${#infos[@]};
   for ((i=0; i<$info_amount; i++)) {
     ${infos[i]}_info &
