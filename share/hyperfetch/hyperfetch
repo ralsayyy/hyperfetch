@@ -3,15 +3,15 @@
 # kill the script if command errors out
 set -e
 # disable unicode
-LC_ALL=C
-LANG=C
+export LC_ALL=C
+export LANG=C
 
 function module_output {
   echo "$1" > "/run/user/$UID/hyperfetch/$2"
 }
 
 function logo {
-  [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
+  [[ -e "distro/ascii-${ascii_distro}" ]] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
 }
 
 function model_info {
@@ -19,15 +19,15 @@ function model_info {
 }
 
 function mem_fancy_info {
+  module_output "( )" "mem_fancy"
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
-# from https://github.com/dylanaraps/pure-bash-bible
+  # from https://github.com/dylanaraps/pure-bash-bible
   ((elapsed=$mem_percent*15/100))
-  printf -v prog  "%${elapsed}s"
+  printf -v prog "%${elapsed}s"
   printf -v total "%$((15-elapsed))s"
-  #module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
-  echo "(${prog// / ●}${total// / ○} )" > /run/user/$UID/hyperfetch/mem_fancy
+  module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
 }
 
 function get_ascii_xy {
@@ -128,12 +128,12 @@ function distro_info {
 }
 
 function main {
-  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
+  mkdir -p /run/user/$UID/hyperfetch/
   reset="\e[m"
-  [ -e "/bedrock/etc/os-release" ] && source /bedrock/etc/os-release || source /etc/os-release
+  [[ -e "/bedrock/etc/os-release" ]] && source /bedrock/etc/os-release || source /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
-  [ -e "distro/$distro_id" ] && source "distro/$distro_id" || source "distro/unknown"
-  if [ -e "${HOME}/.config/hyperfetch/config" ];then
+  [[ -e "distro/$distro_id" ]] && source "distro/$distro_id" || source "distro/unknown"
+  if [[ -e "${HOME}/.config/hyperfetch/config" ]];then
     source ${HOME}/.config/hyperfetch/config
   else
     infos=(title distro kernel model uptime packages shell term mem_fancy wm cpu gpu) 
@@ -153,7 +153,7 @@ function main {
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [ "$ascii_show" = "1" ] && {
+  [[ "$ascii_show" = "1" ]] && {
     get_ascii_xy "$ascii_distro"
     logo "${ascii_distro}" &
   }
