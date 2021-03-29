@@ -128,10 +128,11 @@ uptime_info() {
         IFS=" ";;
   Darwin)
     last_reboot=$(sysctl -n kern.boottime)
+    IFS="="
     set -- $last_reboot
-    last_rebooot=$5
-    set -- $last_reboot
+    last_rebooot=$2
     IFS=,
+    set -- $last_reboot
     last_reboot=$1
     IFS=" "
     uptime_first=$(( $(date +%s) - $last_reboot ));;
