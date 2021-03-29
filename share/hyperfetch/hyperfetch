@@ -1,24 +1,22 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-# kill the script if command errors out
-set -e
 # disable unicode
 LC_ALL=C
 LANG=C
 
-function module_output {
-  echo "$1" > "/run/user/$UID/hyperfetch/$2"
+module_output() {
+  echo "${prefix_format}$1" > "/run/user/1000/hyperfetch/$2"
 }
 
-function logo {
+logo() {
   [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
 }
 
-function model_info {
-  module_output "$(</sys/devices/virtual/dmi/id/product_name)" "model"
+model_info() {
+  module_output "${model_prefix}$(</sys/devices/virtual/dmi/id/product_name)" "model"
 }
 
-function mem_fancy_info {
+mem_fancy_info() {
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
@@ -30,113 +28,67 @@ function mem_fancy_info {
   echo "(${prog// / ●}${total// / ○} )" > /run/user/$UID/hyperfetch/mem_fancy
 }
 
-function get_ascii_xy {
+get_ascii_xy() {
   # ascii width is (width of ascii art + 2)
   case "$1" in 
-    "arch") ascii_width=34 ascii_height=15;;
-    "gentoo") ascii_width=37 ascii_height=17;;
-    "bedrock") ascii_width=40 ascii_height=17;;
-    *) ascii_width=0 ascii_height=0;;
+    "arch") export ascii_width=34 ascii_height=15;;
+    "gentoo") export ascii_width=37 ascii_height=17;;
+    "bedrock") export ascii_width=40 ascii_height=17;;
+    *) export ascii_width=0 ascii_height=0;;
   esac
 }
 
-function title_info {
-  module_output "${prefix_format}$USER\e[m@${prefix_format}$HOSTNAME" "title"
+title_info() {
+  module_output "$USER\033[m@${prefix_format}${HOSTNAME:-$(hostname)}" "title"
 }
 
-function term_info {
+term_info() {
   terminal=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))" )
-  module_output "$terminal" "term"
+  module_output "${term_prefix}$terminal" "term"
 }
 
-function gpu_info {
-  # from https://github.com/dylanaraps/neofetch
-  gpu_cmd="$(lspci -mm | awk -F '\"|\" \"|\\(' \
-    '/"Display|"3D|"VGA/ {a[$0] = $1 " " $3 " " $4}
-    END {for(i in a) {if(!seen[a[i]]++) print a[i]}}')"
-    IFS=$'\n' read -d "" -ra gpus <<< "$gpu_cmd"
-  [[ "${gpus[0]}" == *Intel* && "${gpus[1]}" == *Intel* ]] && unset -v "gpus[0]"
-  for gpu in "${gpus[@]}"; do
-    [[ "$gpu_type" == "dedicated" && "$gpu" == *Intel* ]] || \
-      [[ "$gpu_type" == "integrated" && ! "$gpu" == *Intel* ]] && \
-      { unset -v gpu; continue; }
-    case $gpu in
-      *"Advanced"*)
-        brand="AMD"
-        gpu="${gpu/\[AMD\/ATI\] }"
-        gpu="${gpu/\[AMD\] }"
-        gpu="${gpu/OEM }"
-        gpu="${gpu/Advanced Micro Devices, Inc.}"
-        gpu="${gpu/*\[}"
-        gpu="${gpu/\]*}"
-        gpu="$brand $gpu";;
-      *"NVIDIA"*)
-        gpu="${gpu/*\[}"
-        gpu="${gpu/\]*}"
-        gpu="NVIDIA $gpu";;
-      *"Intel"*)
-        gpu="${gpu/*Intel/Intel}"
-        gpu="${gpu/\(R\)}"
-        gpu="${gpu/Corporation}"
-        gpu="${gpu/ \(*}"
-        gpu="${gpu/Integrated Graphics Controller}"
-        gpu="${gpu/*Xeon*/Intel HD Graphics}"
-        [[ -z "$(trim "$gpu")" ]] && gpu="Intel Integrated Graphics";;
-      *"MCST"*)
-        gpu="${gpu/*MCST*MGA2*/MCST MGA2}";;
-      *"VirtualBox"*)
-        gpu="VirtualBox Graphics Adapter";;
-      *) continue ;;
-      esac
-  done
-  echo "$gpu" > /run/user/$UID/hyperfetch/gpu
-  # module_output "$gpu" "gpu"
-}
-
-function cpu_info {
+cpu_info() {
   cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1)
-  module_output "${cpu/\ }" "cpu"
+  module_output "${cpu_prefix}${cpu}" "cpu"
 }
 
-function wm_info {
-  module_output "$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
+wm_info() {
+  module_output "${wm_prefix}$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
 }
 
-function memory_info {
+memory_info() {
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
-  module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
+  module_output "${memory_prefix}$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
 }
 
-function shell_info {
-  module_output "$SHELL" "shell"
+shell_info() {
+  module_output "${shell_prefix}$SHELL" "shell"
 }
 
-function uptime_info {
+uptime_info() {
   uptime=$(uptime -p)
-  module_output "${uptime/up}" "uptime"
+  module_output "${uptime_prefix}${uptime##up}" "uptime"
 }
 
-function kernel_info {
-  #aaaaa="$(<"/proc/version")"
-  #IFS=$'\n' read -d "" -ra arr <<< "${aaaaa//\ /$'\n'}"
-  module_output "$(uname -r)" "kernel"
+kernel_info() {
+  module_output "${kernel_prefix}$(uname -r)" "kernel"
 }
 
-function distro_info {
-  module_output "$distro" "distro"
+distro_info() {
+  module_output "${distro_prefix}$distro" "distro"
 }
 
-function main {
-  [ -e "/run/user/$UID/hyperfetch" ] || mkdir /run/user/$UID/hyperfetch/
-  reset="\e[m"
-  [ -e "/bedrock/etc/os-release" ] && source /bedrock/etc/os-release || source /etc/os-release
+main() {
+  mkdir -p /run/user/1000/hyperfetch/
+  reset="\033[m"
+  [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
-  [ -e "distro/$distro_id" ] && source "distro/$distro_id" || source "distro/unknown"
+  # [ -e "distro/$distro_id" ] && . "distro/$distro_id" || . "distro/unknown"
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
-    source ${HOME}/.config/hyperfetch/config
+    . ${HOME}/.config/hyperfetch/config
   else
-    infos=(title distro kernel model uptime packages shell term mem_fancy wm cpu gpu) 
+    infos="title distro kernel model memory uptime shell term wm cpu mem_fancy" 
     distro_prefix="Distro${reset}: "
     kernel_prefix="Kernel${reset}: "
     uptime_prefix="Uptime${reset}:"
@@ -144,12 +96,12 @@ function main {
     packages_prefix="Packages${reset}: "
     memory_prefix="Memory${reset}: "
     wm_prefix="WM${reset}:"
-    cpu_prefix="CPU${reset}: "
+    cpu_prefix="CPU${reset}:"
     gpu_prefix="GPU${reset}: "
     term_prefix="Terminal${reset}: "
     mem_fancy_prefix="Memory${reset}: "
     model_prefix="Device${reset}: "
-    prefix_format="\e[1;38;5;5m"
+    prefix_format="\033[1;38;5;5m"
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
@@ -157,18 +109,20 @@ function main {
     get_ascii_xy "$ascii_distro"
     logo "${ascii_distro}" &
   }
-  info_amount=${#infos[@]};
-  for ((i=0; i<$info_amount; i++)) {
-    ${infos[i]}_info &
+  {
+    set -f
+    set +f -- ${infos}
+    for infos do 
+      ${infos}_info &
+    done
+    wait
+    printf "\033[${ascii_height}A"
+    for infos do
+      read info < /run/user/1000/hyperfetch/${infos}
+      printf "\033[1000D\033[${ascii_width}C${info}\n"
+    done
   }
-  wait
-  printf "\e[${ascii_height}A"
-  for ((i=0; i<$info_amount; i++)) {
-    mapfile -t info < /run/user/$UID/hyperfetch/${infos[i]}
-    prefix=${infos[i]}_prefix
-    printf "\e[1000D\e[${ascii_width}C${prefix_format}${!prefix}${info[@]}\n"
-  }
-  [ "$ascii_height" = 0 ] || echo -e "\e[$(( $ascii_height - $info_amount ))B"
+  [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - 9 ))B"
 }
 
 main $@

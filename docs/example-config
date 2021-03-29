@@ -1,5 +1,5 @@
 # sections to display (available sections: distro, kernel, uptime, shell, packages, memory, wm, cpu, gpu, term)
-infos=(logo title distro kernel model uptime packages term shell mem_fancy wm cpu gpu)
+infos="title distro kernel model uptime packages term shell memory wm cpu"
 
 ## sections
 # distro
@@ -17,9 +17,7 @@ memory_prefix="Memory${reset}: "
 # wm
 wm_prefix="WM${reset}:"
 # cpu
-cpu_prefix="CPU${reset}: "
-# gpu
-gpu_prefix="GPU${reset}: "
+cpu_prefix="CPU${reset}:"
 # terminal
 term_prefix="Terminal${reset}: "
 # mem_fancy
@@ -34,4 +32,4 @@ ascii_show="1"
 
 ## Display Options
 # Prefix formatting
-prefix_format="\e[1;38;5;5m"
+prefix_format="\033[1;38;5;5m"
