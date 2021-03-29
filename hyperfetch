@@ -106,7 +106,7 @@ term_info() {
 cpu_info() {
   case $OSTYPE in 
     Linux)  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1);;
-    Darwin) cpu=$(sysctl -n machdep.cpu.brand_string);;
+    Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)";;
   esac 
   module_output "${cpu}" "cpu"
 }
@@ -114,7 +114,7 @@ cpu_info() {
 wm_info() {
   case $OSTYPE in 
     Linux) wm=$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}');;
-    Darwin) wm="quartz";;
+    Darwin) wm=" quartz";;
   esac
   module_output "$wm" "wm"
 }
@@ -136,7 +136,8 @@ uptime_info() {
         set -- $uptime
         #the amount of secounds the system is up
         uptime_first=$1
-        IFS=" ";;
+        IFS=" "
+        hours=$((uptime_first / 3600));;
   Darwin)
     last_reboot=$(sysctl -n kern.boottime)
     IFS="="
@@ -147,16 +148,21 @@ uptime_info() {
     last_reboot=$1
     IFS=" "
     set -- $last_reboot
-    uptime_first=$(( $(date +%s) - $4 ));;
+    uptime_first=$(( $(date +%s) - $4 ))
+    hours=" $((uptime_first / 3600))";;
   esac 
-  hours=$((uptime_first / 3600))
   minutes=$((uptime_first % 3600 / 60))
   [ $hours = 0 ] || uptime_hours=" $hours hours,"
   module_output "${uptime_hours} $minutes minutes" "uptime"
 }
 
 kernel_info() {
-  module_output "$(uname -r)" "kernel"
+  kernel_release=$(uname -r)
+  case $OSTYPE in
+    Linux) kernel=$kernel_release;;
+    Darwin) kernel="Darwin $kernel_release";;
+  esac
+  module_output "$kernel" "kernel"
 }
 
 distro_info() {
