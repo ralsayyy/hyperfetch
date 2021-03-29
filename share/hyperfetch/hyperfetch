@@ -5,7 +5,7 @@ set -e
 # disable unicode
 export LC_ALL=C
 export LANG=C
-export UID=$(id -u)
+[ "$UID" = "" ] && export UID=$(id -u)
 
 module_output() {
   echo "$1" > "/run/user/$UID/hyperfetch/$2"
