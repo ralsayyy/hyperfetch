@@ -100,12 +100,28 @@ distro_info() {
   module_output "$distro" "distro"
 }
 
+has() {
+  command -v $1 >/dev/null
+  return $?
+}
+
+packages_info() {
+  {
+    has qlist &> /dev/null && {
+      qlist -IC | wc -l | tr -d "\n"; echo -n " (emerge) "
+    } &
+    has pacman-key &> /dev/null && {
+      pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
+    } &
+    wait
+  } > /run/user/$UID/hyperfetch/packages
+}
+
 main() {
   mkdir -p /run/user/$UID/hyperfetch/
   reset="\033[m"
   [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
-  [ -e "distro/$distro_id" ] && . "distro/$distro_id" || . "distro/unknown"
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     . ${HOME}/.config/hyperfetch/config
   else

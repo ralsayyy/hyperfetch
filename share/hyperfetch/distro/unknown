@@ -1,4 +1,0 @@
-#!/bin/sh 
-packages_info() {
-  module_output "Unknown" "packages"
-}
