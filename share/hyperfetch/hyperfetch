@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# kill the script if something errors out
+set -e
 # disable unicode
 export LC_ALL=C
 export LANG=C
@@ -21,11 +23,18 @@ mem_fancy_info() {
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
-  # from https://github.com/dylanaraps/pure-bash-bible
   elapsed=$(($mem_percent*15/100))
-  printf -v prog "%${elapsed}s"
-  printf -v total "%$((15-elapsed))s"
-  module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
+  i=0
+  while [ $i != ${elapsed} ]; do
+    prog="${prog} ●"
+    i=$(( $i + 1 ))
+  done
+  i=0
+  while [ $i != $(( 15 - elapsed )) ]; do
+    total="${total} ○"
+    i=$(( $i + 1 ))
+  done
+  module_output "(${prog}${total} )" "mem_fancy"
 }
 
 get_ascii_xy() {
