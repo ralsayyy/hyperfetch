@@ -10,7 +10,7 @@ module_output() {
 
 
 logo() {
-  [[ -e "distro/ascii-${ascii_distro}" ]] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
+  [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
 }
 
 model_info() {
@@ -105,7 +105,7 @@ main() {
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [[ "$ascii_show" = "1" ]] && {
+  [ "$ascii_show" = "1" ] && {
     get_ascii_xy "$ascii_distro"
     logo "${ascii_distro}" &
   }
