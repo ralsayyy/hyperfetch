@@ -11,7 +11,7 @@ export OSTYPE=$(uname)
 PREFIX=${PREFIX:-.}
 
 module_output() {
-  echo "$1" > "$TMP_PREFIX/$UID/hyperfetch/$2"
+  echo "$1" > "$TEMP_PREFIX/$UID/hyperfetch/$2"
 }
 
 gpu_info() {
