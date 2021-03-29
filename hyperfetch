@@ -135,7 +135,8 @@ uptime_info() {
     set -- $last_reboot
     last_reboot=$1
     IFS=" "
-    uptime_first=$(( $(date +%s) - $last_reboot ));;
+    set -- $last_reboot
+    uptime_first=$(( $(date +%s) - $4 ));;
   esac 
   hours=$((uptime_first / 3600))
   minutes=$((uptime_first % 3600 / 60))
