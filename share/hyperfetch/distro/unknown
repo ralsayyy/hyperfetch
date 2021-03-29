@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
-function packages_info {
+#!/bin/sh 
+packages_info() {
   module_output "Unknown" "packages"
 }

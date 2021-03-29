@@ -3,8 +3,9 @@ count() {
     [ -e "$1" ] \
     && printf '%s\n' "$#" \
     || printf '%s\n' 0
-  }
-function packages_info {
+}
+
+packages_info() {
   module_output $(count /var/lib/pacman/local/*/) "packages"
 }
 
