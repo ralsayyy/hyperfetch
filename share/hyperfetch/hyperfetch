@@ -1,15 +1,16 @@
 #!/bin/sh
 
 # disable unicode
-LC_ALL=C
-LANG=C
+export LC_ALL=C
+export LANG=C
 
 module_output() {
   echo "${prefix_format}$1" > "/run/user/1000/hyperfetch/$2"
 }
 
+
 logo() {
-  [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
+  [[ -e "distro/ascii-${ascii_distro}" ]] && printf "${prefix_format}" && cat "distro/ascii-${ascii_distro}"
 }
 
 model_info() {
@@ -20,12 +21,11 @@ mem_fancy_info() {
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
-# from https://github.com/dylanaraps/pure-bash-bible
+  # from https://github.com/dylanaraps/pure-bash-bible
   ((elapsed=$mem_percent*15/100))
-  printf -v prog  "%${elapsed}s"
+  printf -v prog "%${elapsed}s"
   printf -v total "%$((15-elapsed))s"
-  #module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
-  echo "(${prog// / ●}${total// / ○} )" > /run/user/$UID/hyperfetch/mem_fancy
+  module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
 }
 
 get_ascii_xy() {
@@ -105,7 +105,7 @@ main() {
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [ "$ascii_show" = "1" ] && {
+  [[ "$ascii_show" = "1" ]] && {
     get_ascii_xy "$ascii_distro"
     logo "${ascii_distro}" &
   }
