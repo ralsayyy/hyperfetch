@@ -67,8 +67,17 @@ shell_info() {
 }
 
 uptime_info() {
-  uptime=$(uptime -p)
-  module_output "${uptime_prefix}${uptime##up}" "uptime"
+  read uptime < /proc/uptime
+  old_ifs=$IFS
+  IFS=.
+  set -- $uptime
+  uptime_first=$1
+  IFS=$old_ifs
+  hours=$((uptime_first / 3600))
+  minutes=$((uptime_first % 3600 / 60))
+  [ $hours = 0 ] || uptime_pretty="$hours hours"
+  uptime_pretty="$uptime_pretty, $minutes minutes"
+  module_output "${uptime_prefix} ${uptime_pretty}" "uptime"
 }
 
 kernel_info() {
@@ -88,7 +97,7 @@ main() {
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     . ${HOME}/.config/hyperfetch/config
   else
-    infos="title distro kernel model memory uptime shell term wm cpu mem_fancy" 
+    infos="title distro kernel model memory uptime shell term wm cpu" 
     distro_prefix="Distro${reset}: "
     kernel_prefix="Kernel${reset}: "
     uptime_prefix="Uptime${reset}:"
