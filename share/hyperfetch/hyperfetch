@@ -155,7 +155,7 @@ main() {
     wait
     printf "\033[${ascii_height}A"
     for infos do
-      read info < /run/user/1000/hyperfetch/${infos}
+      read -r info < /run/user/1000/hyperfetch/${infos}
       prefix="$(eval printf '%s' \"\$${infos}_prefix\")"
       printf "\033[1000D\033[${ascii_width}C${prefix_format}${prefix}${info}\n"
     done
