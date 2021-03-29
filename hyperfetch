@@ -119,11 +119,23 @@ shell_info() {
 }
 
 uptime_info() {
-  read uptime < /proc/uptime
-  IFS=.
-  set -- $uptime
-  uptime_first=$1
-  IFS=" "
+  case $OSTYPE in
+  Linux)read uptime < /proc/uptime
+        IFS=.
+        set -- $uptime
+        #the amount of secounds the system is up
+        uptime_first=$1
+        IFS=" ";;
+  Darwin)
+    last_reboot=$(sysctl -n kern.boottime)
+    set -- $last_reboot
+    last_rebooot=$5
+    set -- $last_reboot
+    IFS=,
+    last_reboot=$1
+    IFS=" "
+    uptime_first=$(( $(date +%s) - $last_reboot ))
+  esac 
   hours=$((uptime_first / 3600))
   minutes=$((uptime_first % 3600 / 60))
   [ $hours = 0 ] || uptime_hours=" $hours hours,"
