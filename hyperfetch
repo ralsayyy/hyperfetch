@@ -50,7 +50,7 @@ mem_fancy_info() {
   case $OSTYPE in
     Linux) free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
            total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo);;
-    Darwin) free_mem=$(( ($(sysctl -n hw.memsize) - $(sysctl -n kern.dtrace.buffer_memory_maxsize) - $(sysctl -n machdep.memmap.reserved))))
+    Darwin) free_mem=$(( $(sysctl -n hw.memsize) - $(sysctl -n kern.dtrace.buffer_memory_maxsize) - $(sysctl -n machdep.memmap.reserved)))
             total_mem=$(sysctl -n hw.memsize);;
   esac
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
