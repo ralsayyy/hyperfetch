@@ -15,7 +15,8 @@ module_output() {
 }
 
 gpu_info() {
-  gpu_cmd=$(lspci | grep "VGA")
+  case $OSTYPE in 
+    Linux) gpu_cmd=$(lspci | grep "VGA")
   case $gpu_cmd in 
     *"NVIDIA"*) 
       IFS=\[
@@ -30,6 +31,16 @@ gpu_info() {
       set -- $gpu_cmd
       gpu=$2
       IFS=" "
+  esac;;
+  Darwin) [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu" ] && {
+    read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu"
+  } || {
+    gpu=$(system_profiles SPDisplaysDataType | grep "Chipset Model:")
+    IFS=":"
+    set -- $gpu
+    gpu=$2
+    IFS=""
+  };;
   esac
   module_output "$gpu" "gpu"
 }
@@ -187,7 +198,7 @@ main() {
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     . ${HOME}/.config/hyperfetch/config
   else
-    infos="title distro kernel model mem_fancy uptime shell term wm cpu" 
+    infos="title distro kernel model mem_fancy uptime shell term wm cpu gpu" 
     distro_prefix="Distro${reset}: "
     kernel_prefix="Kernel${reset}: "
     uptime_prefix="Uptime${reset}:"
