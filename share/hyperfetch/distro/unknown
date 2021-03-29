@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-function packages_info {
-  module_output "Unknown" "packages"
-}
