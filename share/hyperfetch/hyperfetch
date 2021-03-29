@@ -5,9 +5,10 @@ set -e
 # disable unicode
 export LC_ALL=C
 export LANG=C
+export UID=$(id -u)
 
 module_output() {
-  echo "$1" > "/run/user/1000/hyperfetch/$2"
+  echo "$1" > "/run/user/$UID/hyperfetch/$2"
 }
 
 
@@ -100,7 +101,7 @@ distro_info() {
 }
 
 main() {
-  mkdir -p /run/user/1000/hyperfetch/
+  mkdir -p /run/user/$UID/hyperfetch/
   reset="\033[m"
   [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
   export distro=$PRETTY_NAME distro_id=$ID
