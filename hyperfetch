@@ -140,7 +140,7 @@ packages_info() {
 main() {
   case $OSTYPE in 
     Linux) TEMP_PREFIX=/run/user;;
-    Darwin) TEMP_PREFIX=/tmp/;;
+    Darwin) TEMP_PREFIX=/tmp;;
   esac
   mkdir -p $TEMP_PREFIX/$UID/hyperfetch/
   reset="\033[m"
