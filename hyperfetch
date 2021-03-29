@@ -39,12 +39,20 @@ logo() {
 }
 
 model_info() {
-  module_output "$(cat /sys/devices/virtual/dmi/id/product_name)" "model"
+  case $OSTYPE in 
+    Linux) model="$(cat /sys/devices/virtual/dmi/id/product_name)";;
+    Darwin) model="$(sysctl -n hw.model)"
+  esac
+  module_output "$model" "model"
 }
 
 mem_fancy_info() {
-  free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
-  total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
+  case $OSTYPE in
+    Linux) free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
+           total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo);;
+    Darwin) free_mem=$(( ($(sysctl -n hw.memsize) - $(sysctl -n kern.dtrace.buffer_memory_maxsize) - $(sysctl -n machdep.memmap.reserved))))
+            total_mem=$(sysctl -n hw.memsize);;
+  esac
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
   elapsed=$(($mem_percent*15/100))
   i=0
