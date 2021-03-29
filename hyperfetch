@@ -75,19 +75,29 @@ title_info() {
 }
 
 term_info() {
-  read parent_stat < /proc/$PPID/stat
-  set -- $parent_stat
-  terminal=$(cat /proc/$4/comm)
+  case $OSTYPE in 
+  Linux)  read parent_stat < /proc/$PPID/stat
+          set -- $parent_stat
+          terminal=$(cat /proc/$4/comm);;
+  Darwin) terminal=$TERM_PROGRAM;;
+  esac
   module_output "$terminal" "term"
 }
 
 cpu_info() {
-  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1)
+  case $OSTYPE in 
+    Linux)  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1);;
+    Darwin) cpu=$(sysctl -n machdep.cpu.brand_string);;
+  esac 
   module_output "${cpu}" "cpu"
 }
 
 wm_info() {
-  module_output "$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
+  case $OSTYPE in 
+    Linux) wm=$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}');;
+    Darwin) wm="quartz";;
+  esac
+  module_output "$wm" "wm"
 }
 
 memory_info() {
@@ -149,7 +159,7 @@ main() {
      [ -e "/bedrock/strata/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
       export distro=$PRETTY_NAME distro_id=$ID;;
     Darwin)
-      export distro=$(sysctl -n kern.osproductversion)
+      export distro="macOS $(sysctl -n kern.osproductversion)"
       export distro_id=macos;;
   esac
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
