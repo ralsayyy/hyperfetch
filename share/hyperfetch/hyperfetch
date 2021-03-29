@@ -43,7 +43,10 @@ title_info() {
 }
 
 term_info() {
-  terminal=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))" )
+  # terminal=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))" )
+  read parent_stat < /proc/$PPID/stat
+  set -- $parent_stat
+  terminal=$(cat /proc/$4/comm)
   module_output "${term_prefix}$terminal" "term"
 }
 
