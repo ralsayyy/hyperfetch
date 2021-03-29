@@ -5,7 +5,7 @@ export LC_ALL=C
 export LANG=C
 
 module_output() {
-  echo "${prefix_format}$1" > "/run/user/1000/hyperfetch/$2"
+  echo "$1" > "/run/user/1000/hyperfetch/$2"
 }
 
 
@@ -14,7 +14,7 @@ logo() {
 }
 
 model_info() {
-  module_output "${model_prefix}$(</sys/devices/virtual/dmi/id/product_name)" "model"
+  module_output "$(</sys/devices/virtual/dmi/id/product_name)" "model"
 }
 
 mem_fancy_info() {
@@ -22,7 +22,7 @@ mem_fancy_info() {
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
   # from https://github.com/dylanaraps/pure-bash-bible
-  ((elapsed=$mem_percent*15/100))
+  elapsed=$(($mem_percent*15/100))
   printf -v prog "%${elapsed}s"
   printf -v total "%$((15-elapsed))s"
   module_output "(${prog// / ●}${total// / ○} )" "mem_fancy"
@@ -46,26 +46,26 @@ term_info() {
   read parent_stat < /proc/$PPID/stat
   set -- $parent_stat
   terminal=$(cat /proc/$4/comm)
-  module_output "${term_prefix}$terminal" "term"
+  module_output "$terminal" "term"
 }
 
 cpu_info() {
   cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1)
-  module_output "${cpu_prefix}${cpu}" "cpu"
+  module_output "${cpu}" "cpu"
 }
 
 wm_info() {
-  module_output "${wm_prefix}$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
+  module_output "$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
 }
 
 memory_info() {
   free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
   total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
-  module_output "${memory_prefix}$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
+  module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
 }
 
 shell_info() {
-  module_output "${shell_prefix}$SHELL" "shell"
+  module_output "$SHELL" "shell"
 }
 
 uptime_info() {
@@ -79,15 +79,15 @@ uptime_info() {
   minutes=$((uptime_first % 3600 / 60))
   [ $hours = 0 ] || uptime_pretty="$hours hours"
   uptime_pretty="$uptime_pretty, $minutes minutes"
-  module_output "${uptime_prefix} ${uptime_pretty}" "uptime"
+  module_output " ${uptime_pretty}" "uptime"
 }
 
 kernel_info() {
-  module_output "${kernel_prefix}$(uname -r)" "kernel"
+  module_output "$(uname -r)" "kernel"
 }
 
 distro_info() {
-  module_output "${distro_prefix}$distro" "distro"
+  module_output "$distro" "distro"
 }
 
 main() {
@@ -130,7 +130,8 @@ main() {
     printf "\033[${ascii_height}A"
     for infos do
       read info < /run/user/1000/hyperfetch/${infos}
-      printf "\033[1000D\033[${ascii_width}C${info}\n"
+      prefix=$(eval printf '%s' "\$${infos}_prefix")
+      printf "\033[1000D\033[${ascii_width}C${prefix_format}${prefix}${info}\n"
     done
   }
   [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - 9 ))B"
