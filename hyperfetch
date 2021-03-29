@@ -13,6 +13,25 @@ module_output() {
   echo "$1" > "/run/user/$UID/hyperfetch/$2"
 }
 
+gpu_info() {
+  gpu_cmd=$(lspci | grep "VGA")
+  case $gpu_cmd in 
+    *"NVIDIA"*) 
+      IFS=\[
+      set -- $gpu_cmd
+      gpu="$2"
+      IFS=\]
+      set -- $gpu
+      gpu="NVIDIA $1"
+      IFS=" ";;
+    *)
+      IFS=:
+      set -- $gpu_cmd
+      gpu=$2
+      IFS=" "
+  esac
+  module_output "$gpu" "gpu"
+}
 
 logo() {
   [ -e "${PREFIX}/share/hyperfetch/distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "${PREFIX}/share/hyperfetch/distro/ascii-${ascii_distro}"
