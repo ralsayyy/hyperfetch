@@ -134,7 +134,7 @@ packages_info() {
       pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
     } &
     wait
-  } > $TMP_PREFIX/$UID/hyperfetch/packages
+  } > $TEMP_PREFIX/$UID/hyperfetch/packages
 }
 
 main() {
