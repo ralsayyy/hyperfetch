@@ -140,8 +140,7 @@ packages_info() {
 main() {
   mkdir -p /run/user/$UID/hyperfetch/
   reset="\033[m"
-  [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
-  case OSTYPE in 
+  case $OSTYPE in 
     Linux) 
      [ -e "/bedrock/strata/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
       export distro=$PRETTY_NAME distro_id=$ID;;
