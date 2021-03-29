@@ -6,6 +6,7 @@ export LC_ALL=C
 export LANG=C
 # set the uid
 [ "$UID" = "" ] && export UID=$(id -u)
+[ "$OSTYPE" = "" ] && export OSTYPE=$(uname)
 # where to go to for the ascii art
 PREFIX=${PREFIX:-.}
 
@@ -140,7 +141,14 @@ main() {
   mkdir -p /run/user/$UID/hyperfetch/
   reset="\033[m"
   [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
-  export distro=$PRETTY_NAME distro_id=$ID
+  case OSTYPE in 
+    Linux) 
+     [ -e "/bedrock/strata/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
+      export distro=$PRETTY_NAME distro_id=$ID;;
+    Darwin)
+      export distro=$(sysctl -n kern.osproductversion)
+      export distro_id=macos;;
+  esac
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     . ${HOME}/.config/hyperfetch/config
   else
