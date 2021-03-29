@@ -1,4 +1,168 @@
-#!/usr/bin/env dash
+#!/bin/sh
+# kill the script if something errors out
+#set -e
+# disable unicode
+export LC_ALL=C
+export LANG=C
+# set the uid
+[ "$UID" = "" ] && export UID=$(id -u)
+# where to go to for the ascii art
 PREFIX=${PREFIX:-.}
-cd "$PREFIX/share/hyperfetch/"
-. ./hyperfetch
+
+module_output() {
+  echo "$1" > "/run/user/$UID/hyperfetch/$2"
+}
+
+
+logo() {
+  [ -e "distro/ascii-${ascii_distro}" ] && printf "${prefix_format}" && cat "${PREFIX}/distro/ascii-${ascii_distro}"
+}
+
+model_info() {
+  module_output "$(cat /sys/devices/virtual/dmi/id/product_name)" "model"
+}
+
+mem_fancy_info() {
+  free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
+  total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo)
+  mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
+  elapsed=$(($mem_percent*15/100))
+  i=0
+  while [ $i != ${elapsed} ]; do
+    prog="${prog} ●"
+    i=$(( $i + 1 ))
+  done
+  i=0
+  while [ $i != $(( 15 - elapsed )) ]; do
+    total="${total} ○"
+    i=$(( $i + 1 ))
+  done
+  module_output "(${prog}${total} )" "mem_fancy"
+}
+
+get_ascii_xy() {
+  # ascii width is (width of ascii art + 2)
+  case "$1" in 
+    "arch") export ascii_width=34 ascii_height=15;;
+    "gentoo") export ascii_width=37 ascii_height=17;;
+    "bedrock") export ascii_width=40 ascii_height=17;;
+    *) export ascii_width=0 ascii_height=0;;
+  esac
+}
+
+title_info() {
+  module_output "$USER\033[m@${prefix_format}${HOSTNAME:-$(hostname)}" "title"
+}
+
+term_info() {
+  read parent_stat < /proc/$PPID/stat
+  set -- $parent_stat
+  terminal=$(cat /proc/$4/comm)
+  module_output "$terminal" "term"
+}
+
+cpu_info() {
+  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1)
+  module_output "${cpu}" "cpu"
+}
+
+wm_info() {
+  module_output "$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}')" "wm"
+}
+
+memory_info() {
+  free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
+  total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
+  module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
+}
+
+shell_info() {
+  module_output "$SHELL" "shell"
+}
+
+uptime_info() {
+  read uptime < /proc/uptime
+  old_ifs=$IFS
+  IFS=.
+  set -- $uptime
+  uptime_first=$1
+  IFS=$old_ifs
+  hours=$((uptime_first / 3600))
+  minutes=$((uptime_first % 3600 / 60))
+  [ $hours = 0 ] || uptime_pretty="$hours hours"
+  uptime_pretty="$uptime_pretty, $minutes minutes"
+  module_output " ${uptime_pretty}" "uptime"
+}
+
+kernel_info() {
+  module_output "$(uname -r)" "kernel"
+}
+
+distro_info() {
+  module_output "$distro" "distro"
+}
+
+has() {
+  command -v $1 >/dev/null
+  return $?
+}
+
+packages_info() {
+  {
+    has qlist &> /dev/null && {
+      qlist -IC | wc -l | tr -d "\n"; echo -n " (emerge) "
+    } &
+    has pacman-key &> /dev/null && {
+      pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
+    } &
+    wait
+  } > /run/user/$UID/hyperfetch/packages
+}
+
+main() {
+  mkdir -p /run/user/$UID/hyperfetch/
+  reset="\033[m"
+  [ -e "/bedrock/etc/os-release" ] && . /bedrock/etc/os-release || . /etc/os-release
+  export distro=$PRETTY_NAME distro_id=$ID
+  if [ -e "${HOME}/.config/hyperfetch/config" ];then
+    . ${HOME}/.config/hyperfetch/config
+  else
+    infos="title distro kernel model mem_fancy uptime shell term wm cpu" 
+    distro_prefix="Distro${reset}: "
+    kernel_prefix="Kernel${reset}: "
+    uptime_prefix="Uptime${reset}:"
+    shell_prefix="Shell${reset}: "
+    packages_prefix="Packages${reset}: "
+    memory_prefix="Memory${reset}: "
+    wm_prefix="WM${reset}:"
+    cpu_prefix="CPU${reset}:"
+    gpu_prefix="GPU${reset}: "
+    term_prefix="Terminal${reset}: "
+    mem_fancy_prefix="Memory${reset}: "
+    model_prefix="Device${reset}: "
+    prefix_format="\033[1;38;5;5m"
+    ascii_show=1
+    ascii_distro="${distro_id}"
+  fi
+  [ "$ascii_show" = "1" ] && {
+    get_ascii_xy "$ascii_distro"
+    logo "${ascii_distro}" &
+  } || ascii_height=0 ascii_width=0
+  {
+    set -f
+    set +f -- ${infos}
+    for infos do 
+      ${infos}_info &
+    done
+    wait
+    printf "\033[${ascii_height}A"
+    for infos do
+      read -r info < /run/user/1000/hyperfetch/${infos}
+      prefix="$(eval printf '%s' \"\$${infos}_prefix\")"
+      printf "\033[1000D\033[${ascii_width}C${prefix_format}${prefix}${info}\n"
+    done
+  }
+  [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - 9 ))B"
+}
+
+main $@
