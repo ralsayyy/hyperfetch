@@ -35,7 +35,7 @@ gpu_info() {
   Darwin) [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu" ] && {
     read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu"
   } || {
-    gpu=$(system_profiles SPDisplaysDataType | grep "Chipset Model:")
+    gpu=$(system_profiler SPDisplaysDataType | grep "Chipset Model:")
     IFS=":"
     set -- $gpu
     gpu=$2
