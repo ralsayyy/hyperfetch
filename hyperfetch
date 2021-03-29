@@ -1,4 +1,4 @@
 #!/usr/bin/env dash
-PREFIX=
-cd share/hyperfetch/
-dash hyperfetch
+PREFIX=${PREFIX:-.}
+cd "$PREFIX/share/hyperfetch/"
+. ./hyperfetch
