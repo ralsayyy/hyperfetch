@@ -6,7 +6,7 @@ export LC_ALL=C
 export LANG=C
 # set the uid
 [ "$UID" = "" ] && export UID=$(id -u)
-[ "$OSTYPE" = "" ] && export OSTYPE=$(uname)
+export OSTYPE=$(uname)
 # where to go to for the ascii art
 PREFIX=${PREFIX:-.}
 
