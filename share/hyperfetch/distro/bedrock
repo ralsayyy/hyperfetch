@@ -1,15 +1,15 @@
 #!/bin/sh
 has() {
-  command -v $1 &>/dev/null
+  command -v $1 >/dev/null
   return $?
 }
 
 packages_info() {
   {
-    has qlist && {
+    has qlist &> /dev/null && {
       qlist -IC | wc -l | tr -d "\n"; echo -n " (emerge) "
     } &
-    has pacman-key && {
+    has pacman-key &> /dev/null && {
       pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
     } &
     wait
