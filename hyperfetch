@@ -173,7 +173,7 @@ main() {
       ${infos}_info &
     done
     wait
-    printf "\033[${ascii_height}A"
+    [ "$ascii_height" != 0 ] && printf "\033[${ascii_height}A"
     for infos do
       read -r info < /run/user/1000/hyperfetch/${infos}
       prefix="$(eval printf '%s' \"\$${infos}_prefix\")"
