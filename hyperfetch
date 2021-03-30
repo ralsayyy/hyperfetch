@@ -279,17 +279,16 @@ has() {
 packages_info() {
   {
     has qlist &> /dev/null && {
-      qlist -IC | wc -l | tr -d "\n"; echo -n " (emerge) "
-    } &
+      qlist -IC | wc -l | tr -d "\n"; printf " (emerge) "
+    }
     has pacman-key &> /dev/null && {
-      pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
-    } &
+      pacman -Q | wc -l | tr -d "\n"; printf " (pacman) "
+    }
     # dash seems to think homebrew is installed on a system it isn't installed on?
     has brew &> /dev/null && {
-      ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; echo -n " (brew)"
-    } &
-    wait
-  } > $TEMP_PREFIX/$UID/hyperfetch/packages
+      ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; printf " (brew) "
+    }
+  } > $TEMP_PREFIX/$UID/packages
 }
 
 main() {
