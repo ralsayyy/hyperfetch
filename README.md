@@ -20,7 +20,7 @@ x means not working
 - Busybox ash (busybox sh) - -
 - Debian Almquist shell (dash) - ✓
 
-# Operating Support
+## Operating System Support
 ✓ means fully working
 
 x means not working
