@@ -24,8 +24,6 @@ term_prefix="Terminal${reset}: "
 mem_fancy_prefix="Memory${reset}: "
 # model
 model_prefix="Device${reset}: "
-# gpu
-gpu_prefix="GPU${reset}: "
 # logo
 # ${distro_id} is the distro you are currently running
 ascii_distro="${distro_id}"
