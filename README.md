@@ -20,5 +20,16 @@ x means not working
 - Busybox ash (busybox sh) - -
 - Debian Almquist shell (dash) - ✓
 
+# Operating Support
+✓ means fully working
+
+x means not working
+
+\- means mostly working but some features dont work
+
+- Linux (Arch, Gentoo) - ✓
+- macOS - -
+- Linux (Other Distros) -
+
 ## credit
 neofetch - most of the ascii art 
