@@ -120,8 +120,12 @@ wm_info() {
 }
 
 memory_info() {
-  free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
-  total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
+  case $OSTYPE in
+    Linux) free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
+           total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo);;
+    Darwin) free_mem=$(( $(($(sysctl -n hw.memsize) - $(sysctl -n kern.dtrace.buffer_memory_maxsize) - $(sysctl -n machdep.memmap.Reserved))) / 1024)) 
+           total_mem=$(( $(sysctl -n hw.memsize) / 1024)) ;;
+  esac
   module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory"
 }
 
@@ -181,6 +185,9 @@ packages_info() {
     } &
     has pacman-key &> /dev/null && {
       pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
+    } &
+    has brew &> /dev/null && {
+      ls -1 /usr/local/Cellar/ | wc -l; echo -n " (brew)"
     } &
     wait
   } > $TEMP_PREFIX/$UID/hyperfetch/packages
