@@ -125,6 +125,7 @@ memory_info() {
            total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
            module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory";;
     Darwin) 
+          # TODO: fix this
           total_mem=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
           vm_stat=$(vm_stat)
           used_mem=$(( $(echo $vm_stat | awk '/Pages wired:/ { printf "%.0f \n", $4}') + $(echo $vm_stat | awk '/Pages occupied:/ {printf "%.0f \n", $5}')+ $(echo $vm_stat | awk '/Pages active:/ { printf "%.0f \n", $3}') * 4 / 1024))
