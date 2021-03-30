@@ -286,7 +286,9 @@ packages_info() {
     } &
     # dash seems to think homebrew is installed on a system it isn't installed on?
     has brew &> /dev/null && {
-      [ -e "/usr/local/Cellar" ] && ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; echo -n " (brew)"
+      [ -e "/usr/local/Cellar" ] &&  {
+      ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; echo -n " (brew)"
+    }
     } &
     wait
   } > $TEMP_PREFIX/$UID/hyperfetch/packages
