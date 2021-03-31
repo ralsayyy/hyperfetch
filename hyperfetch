@@ -44,11 +44,18 @@ gpu_info() {
 }
 
 
+print_ascii() {
+  printf "$prefix_format"
+  while IFS= read -r line || [ -n "$line" ]; do
+    echo "$line"
+  done < /dev/stdin
+}
+
 ### ascii art start
 logo() {
 case $ascii_distro in
 bedrock)
- printf "${prefix_format}"; cat <<-EOF
+ print_ascii <<-EOF
 --------------------------------------
 --------------------------------------
 --------------------------------------
@@ -69,7 +76,7 @@ bedrock)
 EOF
 ;;
 arch) 
-  printf "$prefix_format"; cat <<-EOF
+  print_ascii <<-EOF
                -@
               .##@
              .####@
@@ -88,7 +95,7 @@ arch)
 EOF
 ;;
 gentoo) 
-  printf "$prefix_format"; cat <<-EOF
+  print_ascii <<-EOF
          -/oyddmdhs+:.
      -odNMMMMMMMMNNmhy+-\`
    -yNMMMMMMMMMMMNNNmmdhy+-
@@ -110,7 +117,7 @@ EOF
 ;;
 macos)
 #source: https://www.asciiart.eu/computers/apple
-printf "$prefix_format"; cat <<-EOF
+print_ascii <<-EOF
                           .8 
                       .888
                     .8888'
@@ -144,8 +151,8 @@ esac
 ### ascii art end
 model_info() {
   case $OSTYPE in 
-    Linux) model="$(cat /sys/devices/virtual/dmi/id/product_name)";;
-    Darwin) model="$(sysctl -n hw.model)"
+    Linux) read -r model < /sys/devices/virtual/dmi/id/product_name;;
+    Darwin) model="$(sysctl -n hw.model)";;
   esac
   module_output "$model" "model"
 }
@@ -191,7 +198,7 @@ term_info() {
   case $OSTYPE in 
   Linux)  read parent_stat < /proc/$PPID/stat
           set -- $parent_stat
-          terminal=$(cat /proc/$4/comm);;
+          read terminal < /proc/$4/comm;;
   Darwin) terminal=$TERM_PROGRAM;;
   esac
   module_output "$terminal" "term"
@@ -199,7 +206,7 @@ term_info() {
 
 cpu_info() {
   case $OSTYPE in 
-    Linux)  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo | head -n 1);;
+    Linux)  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo);;
     Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)";;
   esac 
   module_output "${cpu}" "cpu"
@@ -279,16 +286,16 @@ has() {
 packages_info() {
   {
     has qlist &> /dev/null && {
-      qlist -IC | wc -l | tr -d "\n"; echo -n " (emerge) "
+      qlist -IC | wc -l | tr -d "\n"; printf " (emerge) "
     } &
     has pacman-key &> /dev/null && {
-      pacman -Q | wc -l | tr -d "\n"; echo -n " (pacman) "
+      pacman -Q | wc -l | tr -d "\n"; printf " (pacman) "
     } &
     # dash seems to think homebrew is installed on a system it isn't installed on?
     has brew &> /dev/null && {
       [ -e "/usr/local/Cellar" ] &&  {
-      ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; echo -n " (brew)"
-    }
+        ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; printf " (brew)"
+      }
     } &
     wait
   } > $TEMP_PREFIX/$UID/hyperfetch/packages
