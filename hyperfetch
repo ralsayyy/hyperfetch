@@ -32,8 +32,8 @@ gpu_info() {
       gpu=$2
       IFS=" "
   esac;;
-  Darwin) [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu" ] && {
-    read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu"
+  Darwin) [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache" ] && {
+    read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache"
   } || {
     gpu=$(system_profiler SPDisplaysDataType | grep "Chipset Model:")
     IFS=":"
@@ -42,6 +42,7 @@ gpu_info() {
     IFS=""
   };;
   esac
+  echo "$gpu" > $TEMP_PREFIX/$UID/gpu_cache
   module_output "$gpu_prefix$gpu" "gpu"
 }
 
@@ -266,7 +267,7 @@ wm_info() {
     wm=$(wmctrl -m | awk '/Name: / {printf "%s\n", $2}');;
     Darwin) wm="quartz";;
   esac
-  module_output "$wm" "wm"
+  module_output "${wm_prefix}$wm" "wm"
 }
 
 memory_info() {
