@@ -371,6 +371,20 @@ packages_info() {
   } > $TEMP_PREFIX/$UID/hyperfetch/packages
 }
 
+colors() {
+  i=0
+  while [ "$i" != 8 ]; do
+    colors_1="${colors_1}\033[48;5;${i}m   "
+    i=$(( $i + 1 ))
+  done
+   while [ "$i" != 16 ]; do
+    colors_2="${colors_2}\033[48;5;${i}m   "
+    i=$(( $i + 1 ))
+  done
+  printf "$colors_1$reset" > $TEMP_PREFIX/$UID/hyperfetch/colors_1
+  printf "$colors_2$reset" > $TEMP_PREFIX/$UID/hyperfetch/colors_2
+}
+
 main() {
   case $OSTYPE in 
     Linux) TEMP_PREFIX=/run/user;;
@@ -405,15 +419,20 @@ main() {
     prefix_format="\033[1;38;5;5m"
     ascii_show=1
     ascii_distro="${distro_id}"
+    colors_show=1
   fi
    {
     set -f
     set +f -- ${infos}
     infos_amount="$#"
-    [ "$ascii_show" = "1" ] && {
+    [ "$ascii_show" = 1 ] && {
       get_ascii_xy "$ascii_distro"
       logo "${ascii_distro}" &
     } || ascii_height=0 ascii_width=0
+    [ "$colors_show" = 1 ] && {
+      colors &
+      infos_amount=$(( $infos_amount + 3 ))
+    }
     for infos do 
       ${infos}_info &
     done
@@ -423,6 +442,12 @@ main() {
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/${infos}
       printf "\033[1000D\033[${ascii_width}C${prefix_format}${info}\n"
     done
+    [ "$colors_show" = 1 ] && {
+      read -r info < $TEMP_PREFIX/$UID/hyperfetch/colors_1
+      printf "\n\033[1000D\033[${ascii_width}C$info"
+      read -r info < $TEMP_PREFIX/$UID/hyperfetch/colors_2
+      printf "\n\033[1000D\033[${ascii_width}C$info\n"
+    }
   }
   [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - $infos_amount ))B"
 }
