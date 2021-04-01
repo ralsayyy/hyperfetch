@@ -15,8 +15,8 @@ module_output() {
 }
 
 gpu_info() {
-  if [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache" ]; then
-    read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache"
+  if [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu" ]; then
+    :
   else
     case $OSTYPE in 
       Linux)
@@ -44,9 +44,8 @@ gpu_info() {
         gpu=$2
         IFS=" ";;
     esac
-    printf "%s\n" "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache
+    module_output "$gpu_prefix$gpu" "gpu"
   fi
-  module_output "$gpu_prefix$gpu" "gpu"
 }
 
 # from https://github.com/dylanaraps/pure-sh-bible#trim-all-white-space-from-string-and-truncate-spaces
