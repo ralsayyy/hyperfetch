@@ -268,8 +268,16 @@ cpu_info() {
     Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)"
     trim_all $cpu
     cpu=$trimmed_string
-    cpu=${cpu##(R)}
-    cpu=${cpu##(TM)};;
+    set -- $cpu
+    if [ "$1" = "Intel(R)" ]; then 
+      cpu_vendor="Intel"
+      cpu=${cpu##Intel(R)}
+      if [ "$2" = "Core(TM)2" ]; then
+        cpu_series="Core 2"
+        cpu=${cpu##Core(TM)2}
+      fi
+    fi
+    cpu=${cpu_vendor}${cpu_series}${cpu};;
   esac 
   module_output "$cpu_prefix${cpu}" "cpu"
 }
