@@ -2,11 +2,11 @@
 ![screenshot](images/arch-totallyrobot.png)
 hyperfetch is a system information fetcher that focuses on being fast while still looking nice.
 
-## Features
+# Features
 - Mutlithreaded information gathering
 - A config file
 
-## Shell support
+# Shell support
 ✓ means fully working
 
 x means not working
@@ -32,4 +32,4 @@ x means not working
 - Linux (Other Distros) - -
 
 ## credit
-neofetch - most of the ascii art 
+neofetch - some of the ascii art 
