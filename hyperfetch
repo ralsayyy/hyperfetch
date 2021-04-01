@@ -270,8 +270,8 @@ cpu_info() {
     cpu=$trimmed_string
     set -- $cpu
     if [ "$1" = "Intel(R)" ]; then 
-      cpu_vendor="Intel"
-      cpu=${cpu##Intel(R)}
+      cpu_vendor="Intel "
+      cpu=${cpu##Intel(R) }
       if [ "$2" = "Core(TM)2" ]; then
         cpu_series="Core 2"
         cpu=${cpu##Core(TM)2}
