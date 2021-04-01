@@ -17,7 +17,7 @@ x means not working
 - KornShell (ksh) - - (the same problem dash has)
 - GNU Bourne Again Shell (bash) - ✓
 - Z Shell (zsh) - ✓ (only if symlinked to sh)
-- Busybox ash (busybox sh) - (gpu is not showing up)
+- Busybox ash (busybox sh) - ✓
 - Debian Almquist shell (dash) - - (dash thinks some package managers are installed despite not being installed)
 
 # Operating System Support

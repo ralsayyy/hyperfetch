@@ -19,10 +19,10 @@ gpu_info() {
   get_line_content "$TEMP_PREFIX/$UID/hyperfetch/lspci" "VGA"
   case $line_content in 
     *"NVIDIA"*) 
-      IFS=\[
+      IFS=[
       set -- $line_content
       gpu="$2"
-      IFS=\]
+      IFS=]
       set -- $gpu
       gpu="NVIDIA $1"
       IFS=" ";;
