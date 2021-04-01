@@ -15,7 +15,7 @@ module_output() {
 gpu_info() {
   case $OSTYPE in 
   Linux) 
-  lspci > $TEMP_PREFIX/$UID/hyperfetch/lspci
+  [ -e "$TEMP_PREFIX/$UID/hyperfetch/lspci" ] || lspci > $TEMP_PREFIX/$UID/hyperfetch/lspci
   get_line_content "$TEMP_PREFIX/$UID/hyperfetch/lspci" "VGA"
   case $line_content in 
     *"NVIDIA"*) 
