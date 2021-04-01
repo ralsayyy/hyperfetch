@@ -31,6 +31,9 @@ x means not working
 - macOS - -
 - Linux (Other Distros) - -
 
+# Dependencies
+> wmctrl
+to get the current window manager
 ## credit
 [neofetch](https://github.com/dylanaraps/neofetch) - some of the ascii art 
 
