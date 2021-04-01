@@ -14,11 +14,13 @@ module_output() {
 
 gpu_info() {
   case $OSTYPE in 
-    Linux) gpu_cmd=$(lspci | grep "VGA")
-  case $gpu_cmd in 
+  Linux) 
+  lspci > $TEMP_PREFIX/$UID/hyperfetch/lspci
+  get_line_content "$TEMP_PREFIX/$UID/hyperfetch/lspci" "VGA"
+  case $line_content in 
     *"NVIDIA"*) 
       IFS=\[
-      set -- $gpu_cmd
+      set -- $line_content
       gpu="$2"
       IFS=\]
       set -- $gpu
@@ -26,7 +28,7 @@ gpu_info() {
       IFS=" ";;
     *)
       IFS=:
-      set -- $gpu_cmd
+      set -- $line_content
       gpu=$2
       IFS=" "
   esac;;
@@ -40,10 +42,41 @@ gpu_info() {
     IFS=""
   };;
   esac
-  module_output "$gpu" "gpu"
+  module_output "$gpu_prefix$gpu" "gpu"
 }
 
+# from https://github.com/dylanaraps/pure-sh-bible#trim-all-white-space-from-string-and-truncate-spaces
+trim_all() {
+    # Usage: trim_all "   example   string    "
+    set -f
+    set -- $*
+    trimmed_string="$*"
+    set +f
+}
 
+# gets the first line containing a certain string from a file
+# usage get_line <file> <string to search for>
+# outputs in a variable called line_content
+get_line_content() {
+  while read -r line; do 
+    case "$line" in
+      *"${2}"*) line_content="$line"; return;;
+    esac
+  done < "$1"
+}
+
+# gets certain line from a file
+# usage: get_line <file> <line>
+# outputs it in a variable called line
+get_line() {
+  i=1
+  while read -r file || [ -n "$file" ]; do
+    [ "$i" = "$2" ] && line="${file}" && return
+    i=$(( $i + 1 ))
+  done < "$1"
+}
+
+# prints file from stdin
 print_ascii() {
   printf "$prefix_format"
   while IFS= read -r line || [ -n "$line" ]; do
@@ -154,13 +187,22 @@ model_info() {
     Linux) read -r model < /sys/devices/virtual/dmi/id/product_name;;
     Darwin) model="$(sysctl -n hw.model)";;
   esac
-  module_output "$model" "model"
+  module_output "$model_prefix$model" "model"
 }
 
 mem_fancy_info() {
   case $OSTYPE in
-    Linux) free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2 }' /proc/meminfo)
-           total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2 }' /proc/meminfo);;
+    Linux)
+      # free memory
+      get_line /proc/meminfo 3
+      trim_all $line
+      set -- $trimmed_string
+      free_mem="$2"
+      # total memory
+      get_line /proc/meminfo 1
+      trim_all $line
+      set -- $trimmed_string
+      total_mem="$2";;
     Darwin) free_mem=$(( $(vm_stat | awk '/Pages free:/ { printf "%.0f \n", $3}') * 4096 ))
             total_mem=$(sysctl -n hw.memsize);;
   esac
@@ -176,7 +218,7 @@ mem_fancy_info() {
     total="${total} ○"
     i=$(( $i + 1 ))
   done
-  module_output "(${prog}${total} )" "mem_fancy"
+  module_output "$mem_fancy_prefix(${prog}${total} )" "mem_fancy"
 }
 
 get_ascii_xy() {
@@ -201,41 +243,57 @@ term_info() {
           read terminal < /proc/$4/comm;;
   Darwin) terminal=$TERM_PROGRAM;;
   esac
-  module_output "$terminal" "term"
+  module_output "$term_prefix$terminal" "term"
 }
 
 cpu_info() {
   case $OSTYPE in 
-    Linux)  cpu=$(awk -F ":" '/model name/ {printf "%s\n", $2}' /proc/cpuinfo);;
+    Linux)  
+      get_line /proc/cpuinfo 5
+      IFS=":"
+      set -- $line
+      cpu="$2"
+      IFS=" "
+    ;;
     Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)";;
   esac 
-  module_output "${cpu}" "cpu"
+  module_output "$cpu_prefix${cpu}" "cpu"
 }
 
 wm_info() {
   case $OSTYPE in 
-    Linux) wm=$(wmctrl -m | awk -F ":" '/Name: / {printf "%s\n", $2}');;
-    Darwin) wm=" quartz";;
+    Linux)
+    wm=$(wmctrl -m | awk '/Name: / {printf "%s\n", $2}');;
+    Darwin) wm="quartz";;
   esac
   module_output "$wm" "wm"
 }
 
 memory_info() {
   case $OSTYPE in
-    Linux) free_mem=$(awk '/MemAvailable/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
-           total_mem=$(awk '/MemTotal/ { printf "%.0f \n", $2/1024 }' /proc/meminfo)
-           module_output "$(( $total_mem - $free_mem ))M / ${total_mem}M" "memory";;
+    Linux)
+      # free memory
+      get_line /proc/meminfo 3
+      trim_all $line
+      set -- $trimmed_string
+      free_mem="$2"
+      # total memory
+      get_line /proc/meminfo 1
+      trim_all $line
+      set -- $trimmed_string
+      total_mem="$2"
+      module_output "${memory_prefix}$(( $total_mem / 1024 - $free_mem / 1024 ))M / $((total_mem / 1024))M" "memory";;
     Darwin) 
           # TODO: fix this
           total_mem=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
           vm_stat=$(vm_stat)
           used_mem=$(( $(echo $vm_stat | awk '/Pages wired:/ { printf "%.0f \n", $4}') + $(echo $vm_stat | awk '/Pages occupied:/ {printf "%.0f \n", $5}')+ $(echo $vm_stat | awk '/Pages active:/ { printf "%.0f \n", $3}') * 4 / 1024))
-          module_output "${used_mem}M / ${total_mem}M" "memory";; 
+          module_output "${memory_prefix}${used_mem}M / ${total_mem}M" "memory";; 
   esac
 }
 
 shell_info() {
-  module_output "$SHELL" "shell"
+  module_output "${shell_prefix}$SHELL" "shell"
 }
 
 uptime_info() {
@@ -262,7 +320,7 @@ uptime_info() {
   esac 
   minutes=$((uptime_first % 3600 / 60))
   [ $hours = 0 ] || uptime_hours=" $hours hours,"
-  module_output "${uptime_hours} $minutes minutes" "uptime"
+  module_output "$uptime_prefix${uptime_hours} $minutes minutes" "uptime"
 }
 
 kernel_info() {
@@ -271,11 +329,11 @@ kernel_info() {
     Linux) kernel=$kernel_release;;
     Darwin) kernel="Darwin $kernel_release";;
   esac
-  module_output "$kernel" "kernel"
+  module_output "$kernel_prefix$kernel" "kernel"
 }
 
 distro_info() {
-  module_output "$distro" "distro"
+  module_output "$distro_prefix$distro" "distro"
 }
 
 has() {
@@ -285,6 +343,7 @@ has() {
 
 packages_info() {
   {
+    printf "$packages_prefix"
     has qlist &> /dev/null && {
       qlist -IC | wc -l | tr -d "\n"; printf " (emerge) "
     } &
@@ -336,14 +395,14 @@ main() {
     ascii_show=1
     ascii_distro="${distro_id}"
   fi
-  [ "$ascii_show" = "1" ] && {
-    get_ascii_xy "$ascii_distro"
-    logo "${ascii_distro}" &
-  } || ascii_height=0 ascii_width=0
-  {
+   {
     set -f
     set +f -- ${infos}
     infos_amount="$#"
+    [ "$ascii_show" = "1" ] && {
+      get_ascii_xy "$ascii_distro"
+      logo "${ascii_distro}" &
+    } || ascii_height=0 ascii_width=0
     for infos do 
       ${infos}_info &
     done
@@ -351,8 +410,7 @@ main() {
     [ "$ascii_height" != 0 ] && printf "\033[${ascii_height}A"
     for infos do
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/${infos}
-      prefix="$(eval printf '%s' \"\$${infos}_prefix\")"
-      printf "\033[1000D\033[${ascii_width}C${prefix_format}${prefix}${info}\n"
+      printf "\033[1000D\033[${ascii_width}C${prefix_format}${info}\n"
     done
   }
   [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - $infos_amount ))B"
