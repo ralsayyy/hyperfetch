@@ -15,36 +15,37 @@ module_output() {
 }
 
 gpu_info() {
-  case $OSTYPE in 
-  Linux) 
-  [ -e "$TEMP_PREFIX/$UID/hyperfetch/lspci" ] || lspci > $TEMP_PREFIX/$UID/hyperfetch/lspci
-  get_line_content "$TEMP_PREFIX/$UID/hyperfetch/lspci" "VGA"
-  case $line_content in 
-    *"NVIDIA"*) 
-      IFS=[
-      set -- $line_content
-      gpu="$2"
-      IFS=]
-      set -- $gpu
-      gpu="NVIDIA $1"
-      IFS=" ";;
-    *)
-      IFS=:
-      set -- $line_content
-      gpu=$2
-      IFS=" "
-  esac;;
-  Darwin) [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache" ] && {
+  if [ -e "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache" ]; then
     read -r gpu < "$TEMP_PREFIX/$UID/hyperfetch/gpu_cache"
-  } || {
-    gpu=$(system_profiler SPDisplaysDataType | grep "Chipset Model:")
-    IFS=":"
-    set -- $gpu
-    gpu=$2
-    IFS=""
-  }
-  printf "%s\n" "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache;;
-  esac
+  else
+    case $OSTYPE in 
+      Linux)
+        lspci > $TEMP_PREFIX/$UID/hyperfetch/lspci
+        get_line_content "$TEMP_PREFIX/$UID/hyperfetch/lspci" "VGA"
+        case $line_content in
+          *"NVIDIA"*)
+            IFS=[
+            set -- $line_content
+            gpu="$2"
+            IFS=]
+            set -- $gpu
+            gpu="NVIDIA $1"
+            IFS=" ";;
+          *)
+            IFS=:
+            set -- $line_content
+            gpu=$2
+            IFS=" ";;
+          esac;;
+      Darwin)
+        gpu=$(system_profiler SPDisplaysDataType | get_file_content /dev/stdin "Chipset Model:")
+        IFS=":"
+        set -- $gpu
+        gpu=$2
+        IFS=" ";;
+    esac
+    printf "%s\n" "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache
+  fi
   module_output "$gpu_prefix$gpu" "gpu"
 }
 
@@ -85,6 +86,18 @@ get_line_content() {
   done < "$1"
 }
 
+# gets the first line containing a certain string from a file
+# usage get_line <file> <string to search for>
+# outputs to stdout
+get_line_content_stdout() {
+  while read -r line; do 
+    case "$line" in
+      *"${2}"*) printf "%s\n" "$line"; return;;
+    esac
+  done < "$1"
+}
+
+
 # gets certain line from a file
 # usage: get_line <file> <line>
 # outputs it in a variable called line
@@ -95,6 +108,18 @@ get_line() {
     i=$(( $i + 1 ))
   done < "$1"
 }
+
+# gets certain line from a file
+# usage: get_line <file> <line>
+# outputs to stdout
+get_line_stdout() {
+  i=1
+  while read -r file || [ -n "$file" ]; do
+    [ "$i" = "$2" ] && printf "%s\n" "${file}" && return
+    i=$(( $i + 1 ))
+  done < "$1"
+}
+
 
 # prints file from stdin
 print_ascii() {
@@ -395,14 +420,14 @@ packages_info() {
 
 disk_info() {
   disk=${disk:-/}
-  df_output=$(df $disk | tail -n 1)
+  df_output=$(df $disk | get_line_stdout /dev/stdin 2)
   set -- $df_output
   module_output "$disk_prefix$(( $3 / 1024 / 1024 ))G / $(( $2 / 1024 / 1024))G ($5)" "disk"
 }
 
 disk_bar_info() {
   disk=${disk:-/}
-  df_output=$(df $disk | tail -n 1)
+  df_output=$(df $disk | get_line_stdout /dev/stdin 2)
   set -- $df_output
   disk_percent=$5
   IFS=%
