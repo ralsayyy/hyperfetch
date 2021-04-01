@@ -42,7 +42,7 @@ gpu_info() {
     IFS=""
   };;
   esac
-  echo "$gpu" > $TEMP_PREFIX/$UID/gpu_cache
+  echo "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache
   module_output "$gpu_prefix$gpu" "gpu"
 }
 
