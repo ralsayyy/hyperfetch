@@ -201,7 +201,7 @@ model_info() {
   module_output "$model_prefix$model" "model"
 }
 
-mem_fancy_info() {
+memory_bar_info() {
   case $OSTYPE in
     Linux)
       # free memory
@@ -229,7 +229,7 @@ mem_fancy_info() {
     total="${total} ○"
     i=$(( $i + 1 ))
   done
-  module_output "$mem_fancy_prefix(${prog}${total} )" "mem_fancy"
+  module_output "$memory_bar_prefix(${prog}${total} )" "memory_bar"
 }
 
 get_ascii_xy() {
@@ -423,7 +423,7 @@ main() {
   if [ -e "${HOME}/.config/hyperfetch/config" ];then
     . ${HOME}/.config/hyperfetch/config
   else
-    infos="title distro kernel model mem_fancy uptime shell term wm cpu gpu" 
+    infos="title distro kernel model memory_bar uptime shell term wm cpu gpu" 
     distro_prefix="Distro${reset}: "
     kernel_prefix="Kernel${reset}: "
     uptime_prefix="Uptime${reset}:"
@@ -434,7 +434,7 @@ main() {
     cpu_prefix="CPU${reset}:"
     gpu_prefix="GPU${reset}: "
     term_prefix="Terminal${reset}: "
-    mem_fancy_prefix="Memory${reset}: "
+    memory_bar_prefix="Memory${reset}: "
     model_prefix="Device${reset}: "
     prefix_format="\033[1;38;5;5m"
     ascii_show=1
