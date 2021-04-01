@@ -229,7 +229,7 @@ memory_bar_info() {
     total="${total} ○"
     i=$(( $i + 1 ))
   done
-  module_output "$memory_bar_prefix(${prog}${total} )" "memory_bar"
+  module_output "$memory_prefix(${prog}${total} )" "memory_bar"
 }
 
 get_ascii_xy() {
@@ -389,6 +389,30 @@ disk_info() {
   df_output=$(df $disk | tail -n 1)
   set -- $df_output
   module_output "$disk_prefix$(( $3 / 1024 / 1024 ))G / $(( $2 / 1024 / 1024))G ($5)" "disk"
+}
+
+disk_bar_info() {
+  disk=${disk:-/}
+  df_output=$(df $disk | tail -n 1)
+  set -- $df_output
+  disk_percent=$5
+  IFS=%
+  set -- $disk_percent
+  disk_percent=$1
+  IFS=" "
+  elapsed=$(($disk_percent*15/100))
+  i=0
+  while [ $i != ${elapsed} ]; do
+    prog="${prog} ●"
+    i=$(( $i + 1 ))
+  done
+  i=0
+  while [ $i != $(( 15 - elapsed )) ]; do
+    total="${total} ○"
+    i=$(( $i + 1 ))
+  done
+  module_output "$disk_prefix(${prog}${total} )" "disk_bar"
+
 }
 
 colors() {
