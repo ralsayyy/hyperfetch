@@ -32,7 +32,7 @@ x means not working
 - Linux (Other Distros) - -
 
 # Dependencies
-> wmctrl
+  wmctrl
 to get the current window manager
 ## credit
 [neofetch](https://github.com/dylanaraps/neofetch) - some of the ascii art 
