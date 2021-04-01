@@ -9,6 +9,7 @@ export LANG=C
 # get the type of operating system the script is running on
 export OSTYPE=$(uname)
 
+
 module_output() {
   echo "$1" > "$TEMP_PREFIX/$UID/hyperfetch/$2"
 }
@@ -41,9 +42,9 @@ gpu_info() {
     set -- $gpu
     gpu=$2
     IFS=""
-  };;
+  }
+  printf "%s\n" "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache;;
   esac
-  echo "$gpu" > $TEMP_PREFIX/$UID/hyperfetch/gpu_cache
   module_output "$gpu_prefix$gpu" "gpu"
 }
 
@@ -63,6 +64,14 @@ basename_sh() {
     dir=${dir##*/}
     dir=${dir%"$2"}
     basename="${dir:-/}"
+}
+# from https://github.com/dylanaraps/pure-sh-bible#count-files-or-directories-in-directory
+count() {
+    # Usage: count /path/to/dir/*
+    #        count /path/to/dir/*/
+    [ -e "$1" ] \
+        && printf '%s' "$#" \
+        || printf '%s' 0
 }
 
 # gets the first line containing a certain string from a file
@@ -91,7 +100,7 @@ get_line() {
 print_ascii() {
   printf "$prefix_format"
   while IFS= read -r line || [ -n "$line" ]; do
-    echo "$line"
+    printf "%s\n" "$line"
   done < /dev/stdin
 }
 
@@ -367,17 +376,17 @@ has() {
 
 packages_info() {
   {
-    printf "$packages_prefix"
+    printf "%s" "$packages_prefix"
     has qlist &> /dev/null && {
-      qlist -IC | wc -l | tr -d "\n"; printf " (emerge) "
+      count /var/db/pkg/*/*; printf " (emerge) "
     } &
     has pacman-key &> /dev/null && {
-      pacman -Q | wc -l | tr -d "\n"; printf " (pacman) "
+      count /var/lib/pacman/local/*; printf " (pacman) "
     } &
     # dash seems to think homebrew is installed on a system it isn't installed on?
     has brew &> /dev/null && {
       [ -e "/usr/local/Cellar" ] &&  {
-        ls -1 /usr/local/Cellar/ | wc -l | tr -d "\n"; printf " (brew)"
+        count /usr/local/Cellar/*; printf "%s" " (brew)"
       }
     } &
     wait
@@ -412,7 +421,17 @@ disk_bar_info() {
     i=$(( $i + 1 ))
   done
   module_output "$disk_prefix(${prog}${total} )" "disk_bar"
+}
 
+underline_info() {
+  i=0
+  title=${USER}@${HOSTNAME:-$(hostname)}
+  title_lenght=${#title}
+  while [ $i != $title_lenght ]; do
+    underlines=${underlines}${underline_character:-–}
+    i=$(( $i + 1 ))
+  done
+  module_output "${reset}${underline_format}$underlines" "underline"
 }
 
 colors() {
@@ -434,7 +453,8 @@ main() {
     Linux) TEMP_PREFIX=/run/user;;
     Darwin) TEMP_PREFIX=/tmp;;
   esac
-  mkdir -p $TEMP_PREFIX/$UID/hyperfetch/
+  [ "$1" = "--clear-cache" ] && rm -rf "$TEMP_PREFIX/$UID/hyperfetch/"
+  mkdir -p "$TEMP_PREFIX/$UID/hyperfetch/"
   reset="\033[m"
   case $OSTYPE in 
     Linux) 
@@ -484,13 +504,13 @@ main() {
     [ "$ascii_height" != 0 ] && printf "\033[${ascii_height}A"
     for infos do
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/${infos}
-      echo -e "\033[1000D\033[${ascii_width}C${prefix_format}${info}"
+      printf "\033[1000D\033[${ascii_width}C${prefix_format}%b%s\n" "${info}"
     done
     [ "$colors_show" = 1 ] && {
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/colors_1
-      printf "\n\033[1000D\033[${ascii_width}C$info"
+      printf "\n\033[1000D\033[${ascii_width}C%s\n" "$info"
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/colors_2
-      printf "\n\033[1000D\033[${ascii_width}C$info\n"
+      printf "\033[1000D\033[${ascii_width}C%b%s\n" "$info"
     }
   }
   [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - $infos_amount ))B"
