@@ -55,6 +55,15 @@ trim_all() {
     set +f
 }
 
+# from https://github.com/dylanaraps/pure-sh-bible#get-the-base-name-of-a-file-path
+# Usage: basename_sh "path" ["suffix"]
+basename_sh() {
+    dir=${1%${1##*[!/]}}
+    dir=${dir##*/}
+    dir=${dir%"$2"}
+    basename="${dir:-/}"
+}
+
 # gets the first line containing a certain string from a file
 # usage get_line <file> <string to search for>
 # outputs in a variable called line_content
@@ -294,7 +303,8 @@ memory_info() {
 }
 
 shell_info() {
-  module_output "${shell_prefix}$SHELL" "shell"
+  basename_sh "$SHELL"
+  module_output "${shell_prefix}$basename" "shell"
 }
 
 uptime_info() {
