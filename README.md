@@ -1,6 +1,6 @@
-# hyperfetch - a fast system information fetcher
+# hyperfetch - a fast system information tool
 ![screenshot](images/arch-totallyrobot.png)
-hyperfetch is a system information fetcher that focuses on being fast
+hyperfetch is a system information fetcher that focuses on being fast while still looking nice.
 
 ## Features
 - Mutlithreaded information gathering
