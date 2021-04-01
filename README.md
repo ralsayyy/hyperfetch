@@ -29,7 +29,7 @@ x means not working
 
 - Linux (Arch, Gentoo) - ✓
 - macOS - -
-- Linux (Other Distros) -
+- Linux (Other Distros) - -
 
 ## credit
 neofetch - most of the ascii art 
