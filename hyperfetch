@@ -265,11 +265,11 @@ cpu_info() {
       cpu="$2"
       IFS=" "
     ;;
-    Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)";;
+    Darwin) cpu=" $(sysctl -n machdep.cpu.brand_string)"
     trim_all $cpu
     cpu=$trimmed_string
     cpu=${cpu##(R)}
-    cpu=${cpu##(TM)}
+    cpu=${cpu##(TM)};;
   esac 
   module_output "$cpu_prefix${cpu}" "cpu"
 }
