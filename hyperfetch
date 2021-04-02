@@ -130,9 +130,9 @@ print_ascii() {
 
 ### ascii art start
 logo() {
-case $ascii_distro in
-bedrock)
- print_ascii <<-EOF
+  case $ascii_distro in
+    bedrock)
+      print_ascii <<-EOF
 --------------------------------------
 --------------------------------------
 --------------------------------------
@@ -151,9 +151,9 @@ bedrock)
 --------------------------------------
 --------------------------------------
 EOF
-;;
-arch) 
-  print_ascii <<-EOF
+      ;;
+    arch) 
+      print_ascii <<-EOF
                -@
               .##@
              .####@
@@ -170,9 +170,9 @@ arch)
  @H@*\`                    \`*%#@
 *\`                            \`*
 EOF
-;;
-gentoo) 
-  print_ascii <<-EOF
+    ;;
+    gentoo) 
+      print_ascii <<-EOF
          -/oyddmdhs+:.
      -odNMMMMMMMMNNmhy+-\`
    -yNMMMMMMMMMMMNNNmmdhy+-
@@ -191,10 +191,10 @@ yMMNNNNNNNmmmmmNNMmhs+/-\`
 /hMMNNNNNNNNMNdhs++/-\`
 \`/ohdmmddhys+++/:.
 EOF
-;;
-macos)
-#source: https://www.asciiart.eu/computers/apple
-print_ascii <<-EOF
+    ;;
+    macos)
+    #source: https://www.asciiart.eu/computers/apple
+    print_ascii <<-EOF
                           .8 
                       .888
                     .8888'
@@ -221,9 +221,9 @@ print_ascii <<-EOF
          \`#########''########'
            \`""""""'  \`"""""'
 EOF
-;;
-*) : ;;
-esac
+    ;;
+    *) : ;;
+  esac
 }
 ### ascii art end
 model_info() {
@@ -342,9 +342,12 @@ memory_info() {
     Darwin) 
       # TODO: fix this
       total_mem=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
-      vm_stat=$(vm_stat)
-      #pages_wired=$(echo $vm_stat | awk '/Pages wired: { printf "%.0f\n"}' )
-      used_mem=$(( $(echo $vm_stat | awk '/Pages wired:/ { printf "%.0f\n", $4}') + $(echo $vm_stat | awk '/Pages occupied:/ {printf "%.0f \n", $5}') + $(echo $vm_stat | awk '/Pages active:/ { printf "%.0f \n", $3}') * 4 / 1024))
+      vm_stat="$(vm_stat)"
+      pages_wired=$(echo "$vm_stat" | awk '/ wired/ { printf "%.0f\n", $4}' )
+      pages_occupied=$(echo "$vm_stat" | awk '/ occupied/ { printf "%.0f\n", $5}' )
+      pages_occupied=${pages_occupied:-0}
+      pages_active=$(echo "$vm_stat" | awk '/ active/ { printf "%.0f\n", $3}')
+      used_mem=$(( ($pages_wired + $pages_active + $pages_occupied) * 4 / 1024))
       module_output "${memory_prefix}${used_mem}M / ${total_mem}M" "memory";; 
   esac
 }
