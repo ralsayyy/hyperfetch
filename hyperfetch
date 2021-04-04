@@ -247,8 +247,16 @@ memory_bar_info() {
       trim_all $line
       set -- $trimmed_string
       total_mem="$2";;
-    Darwin) free_mem=$(( $(vm_stat | awk '/Pages free:/ { printf "%.0f \n", $3}') * 4096 ))
-            total_mem=$(sysctl -n hw.memsize);;
+    Darwin) 
+      total_mem=$(( $(sysctl -n hw.memsize) / 4096))
+      vm_stat="$(vm_stat)"
+      pages_wired=$(echo "$vm_stat" | awk '/ wired/ { printf "%.0f\n", $4}' )
+      pages_occupied=$(echo "$vm_stat" | awk '/ occupied/ { printf "%.0f\n", $5}' )
+      pages_occupied=${pages_occupied:-0}
+      pages_active=$(echo "$vm_stat" | awk '/ active/ { printf "%.0f\n", $3}')
+      used_mem=$(( ($pages_wired + $pages_active + $pages_occupied) * 4 / 1024))
+      free_mem=$(( $total_mem - $used_mem ))
+      ;;
   esac
   mem_percent=$(( ($total_mem - $free_mem) / ($total_mem / 100) ))
   elapsed=$(($mem_percent*15/100))
@@ -340,7 +348,6 @@ memory_info() {
       total_mem="$2"
       module_output "${memory_prefix}$(( $total_mem / 1024 - $free_mem / 1024 ))M / $((total_mem / 1024))M" "memory";;
     Darwin) 
-      # TODO: fix this
       total_mem=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
       vm_stat="$(vm_stat)"
       pages_wired=$(echo "$vm_stat" | awk '/ wired/ { printf "%.0f\n", $4}' )
