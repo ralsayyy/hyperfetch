@@ -520,7 +520,6 @@ main() {
     ascii_distro="${distro_id}"
     colors_show=1
   fi
-   {
     set -f
     set +f -- ${infos}
     infos_amount="$#"
@@ -547,7 +546,6 @@ main() {
       read -r info < $TEMP_PREFIX/$UID/hyperfetch/colors_2
       printf "\033[1000D\033[${ascii_width}C%b%s\n" "$info"
     }
-  }
   [ "$ascii_height" = 0 ] || printf "\033[$(( $ascii_height - $infos_amount ))B"
 }
 
