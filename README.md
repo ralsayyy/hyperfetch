@@ -18,7 +18,7 @@ x means not working
 - GNU Bourne Again Shell (bash) - ✓
 - Z Shell (zsh) - ✓ (only if symlinked to sh)
 - Busybox ash (busybox sh) - ✓
-- Debian Almquist shell (dash) - - (dash thinks some package managers are installed despite not being installed)
+- Debian Almquist shell (dash) - - (dash thinks some package managers are installed despite them not being installed)
 
 # Operating System Support
 ✓ means fully working
